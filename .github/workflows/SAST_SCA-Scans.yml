@@ -39,7 +39,7 @@ jobs:
             -Dsonar.exclusions=config/**,docs/**,tests/**
             -Dsonar.host.url=https://sonarcloud.io
             -Dsonar.login=cad2ce3d18574d035b91ebd9fc0077724230a640
-            -Dsonar.branch.name=main
+            -Dsonar.branch.name=test-app
 
       # -----------------------
       # SCA: OWASP Dependency Check
