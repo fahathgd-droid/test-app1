@@ -80,7 +80,7 @@ jobs:
 
       # -----------------------
       # Combine Reports (Fixed Permissions)
-      # -----------------------
+      # --------------------------
       - name: Combine Security Reports
         run: |
           # Ensure reports folder exists and is writable
