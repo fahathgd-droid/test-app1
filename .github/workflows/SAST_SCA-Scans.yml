@@ -3,7 +3,7 @@ name: DVWA Security Scan
 on:
   push:
     branches:
-      - master
+      - main
 
 jobs:
   security-scan:
@@ -30,7 +30,7 @@ jobs:
       - name: SonarCloud Scan (SAST)
         uses: sonarsource/sonarqube-scan-action@v6
         env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_TOKEN: cad2ce3d18574d035b91ebd9fc0077724230a640
         with:
           args: >
             -Dsonar.projectKey=fahathgd-droid
@@ -39,7 +39,7 @@ jobs:
             -Dsonar.exclusions=config/**,docs/**,tests/**
             -Dsonar.host.url=https://sonarcloud.io
             -Dsonar.login=cad2ce3d18574d035b91ebd9fc0077724230a640
-            -Dsonar.branch.name=master
+            -Dsonar.branch.name=main
 
       # -----------------------
       # SCA: OWASP Dependency Check
