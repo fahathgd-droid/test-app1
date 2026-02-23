@@ -33,7 +33,7 @@ jobs:
           SONAR_TOKEN: cad2ce3d18574d035b91ebd9fc0077724230a640
         with:
           args: >
-            -Dsonar.projectKey=fahathgd-droid
+            -Dsonar.projectKey=fahathgd-droid_test-app1
             -Dsonar.organization=fahathgd-droid
             -Dsonar.sources=.
             -Dsonar.exclusions=config/**,docs/**,tests/**
