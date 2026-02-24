@@ -36,7 +36,7 @@ jobs:
             -Dsonar.projectKey=fahathgd-droid_test-app1
             -Dsonar.organization=fahathgd-droid
             -Dsonar.sources=.
-            -Dsonar.exclusions=config/**,docs/**,tests/**
+            -Dsonar.exclusions=config/**,docs/**,tests/**,**/*.sql
             -Dsonar.host.url=https://sonarcloud.io
 
       # -----------------------
