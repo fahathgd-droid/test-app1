@@ -81,8 +81,6 @@ jobs:
       # --------------------------
       - name: Calculate Combined Security Risk
         run: |
-            jq --version
-
             echo "🔎 Calculating Security Risk..."
 
             # ----------------------------
@@ -105,6 +103,38 @@ jobs:
             SONAR_MEDIUM=$(jq '[.issues[] | select(.severity=="MINOR")] | length' sonar.json)
             SONAR_LOW=$(jq '[.issues[] | select(.severity=="INFO")] | length' sonar.json)
 
+            echo "added--------Seperate counts"
+                  # 3️⃣ Print Individual Results
+            # ----------------------------
+            echo "--------------------------------------"
+            echo "🛡️ SCA (Dependency Check) Counts"
+            echo "Critical : $DC_CRITICAL"
+            echo "High     : $DC_HIGH"
+            echo "Medium   : $DC_MEDIUM"
+            echo "Low      : $DC_LOW"
+            echo "--------------------------------------"
+
+            echo "🔍 SAST (SonarCloud) Counts"
+            echo "Critical : $SONAR_CRITICAL"
+            echo "High     : $SONAR_HIGH"
+            echo "Medium   : $SONAR_MEDIUM"
+            echo "Low      : $SONAR_LOW"
+            echo "--------------------------------------"
+
+            # ----------------------------
+            # 4️⃣ Combined Totals
+            # ----------------------------
+            TOTAL_CRITICAL=$((DC_CRITICAL + SONAR_CRITICAL))
+            TOTAL_HIGH=$((DC_HIGH + SONAR_HIGH))
+            TOTAL_MEDIUM=$((DC_MEDIUM + SONAR_MEDIUM))
+            TOTAL_LOW=$((DC_LOW + SONAR_LOW))
+
+            echo "📊 Combined Totals"
+            echo "Critical : $TOTAL_CRITICAL"
+            echo "High     : $TOTAL_HIGH"
+            echo "Medium   : $TOTAL_MEDIUM"
+            echo "Low      : $TOTAL_LOW"
+            echo "--------------------------------------"
             # ----------------------------
             # 3️⃣ Combine Counts
             # ----------------------------
