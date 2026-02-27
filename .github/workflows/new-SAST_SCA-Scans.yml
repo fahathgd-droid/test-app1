@@ -205,7 +205,11 @@ jobs:
           echo "----------------------------------------"
           echo "Final SAST Risk Index (CWE-Based): $TOTAL_RISK"
           echo "----------------------------------------"
+      - name: Test NVD API for CWE-89
+        run: |
+          curl -s "https://services.nvd.nist.gov/rest/json/cves/2.0?cweId=CWE-89&resultsPerPage=50" -o nvd.json
 
+          jq '[.vulnerabilities[].cve.metrics.cvssMetricV31[].cvssData.baseScore] | add / length' nvd.json
       # -----------------------
       # Upload Security Reports
       # -----------------------
