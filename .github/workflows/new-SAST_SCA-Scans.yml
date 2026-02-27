@@ -48,7 +48,7 @@ jobs:
         with:
           project: 'DVWA-App'
           path: '.'
-          format: 'HTML'
+          format: 'ALL'
           out: 'reports'
           args: >
             --exclude **/passwordProtected.zip
@@ -81,8 +81,7 @@ jobs:
       # --------------------------
       - name: Calculate Combined Security Risk
         run: |
-            sudo apt-get update -qq
-            sudo apt-get install -y jq -qq
+            jq --version
 
             echo "🔎 Calculating Security Risk..."
 
@@ -98,7 +97,7 @@ jobs:
             # 2️⃣ SonarCloud Counts
             # ----------------------------
             curl -s -u ${{ secrets.SONAR_TOKEN }}: \
-              "https://sonarcloud.io/api/issues/search?componentKeys=YOUR_PROJECT_KEY&types=VULNERABILITY&ps=500" \
+              "https://sonarcloud.io/api/issues/search?componentKeys=fahathgd-droid_test-app1&types=VULNERABILITY&ps=100" \
               -o sonar.json
 
             SONAR_CRITICAL=$(jq '[.issues[] | select(.severity=="BLOCKER" or .severity=="CRITICAL")] | length' sonar.json)
