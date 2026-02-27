@@ -1,0 +1,13 @@
+{
+  "name": "dvwa-security-test/sca-demo",
+  "description": "Intentionally vulnerable dependencies for OWASP Dependency-Check testing",
+  "type": "project",
+  "require": {
+    "php": ">=7.2",
+    "symfony/http-foundation": "2.7.0",
+    "guzzlehttp/guzzle": "6.3.0",
+    "monolog/monolog": "1.18.0",
+    "phpmailer/phpmailer": "5.2.16",
+    "twig/twig": "1.20.0"
+  }
+}
