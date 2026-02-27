@@ -215,7 +215,48 @@ jobs:
           curl -s "https://services.nvd.nist.gov/rest/json/cves/2.0?cweId=CWE-89&resultsPerPage=50" -o nvd.json
 
           jq '[.vulnerabilities[].cve.metrics.cvssMetricV31[].cvssData.baseScore] | add / length' nvd.json
-      # -----------------------
+      - name: Empirical CWE-Based SAST Risk
+        run: |
+            echo "Calculating Empirical CWE-Based SAST Risk..."
+
+            curl -s -u ${{ secrets.SONAR_TOKEN }}: \
+            "https://sonarcloud.io/api/issues/search?componentKeys=fahathgd-droid_test-app1&types=VULNERABILITY&ps=500" \
+            -o sonar.json
+
+            TOTAL_RISK=0
+
+            RULES=$(jq -r '.issues[].rule' sonar.json | sort | uniq)
+
+            for RULE in $RULES; do
+
+            curl -s -u ${{ secrets.SONAR_TOKEN }}: \
+                "https://sonarcloud.io/api/rules/show?key=$RULE" \
+                -o rule.json
+
+            CWE=$(jq -r '.rule.sysTags[]? | select(test("cwe-"))' rule.json \
+                    | head -n 1 \
+                    | tr '[:lower:]' '[:upper:]')
+
+            if [ -z "$CWE" ]; then
+                BASE_IMPACT=5.0
+            else
+                BASE_IMPACT=$(jq -r --arg cwe "$CWE" '.[$cwe] // 5.0' cwe_base_impact.json)
+            fi
+
+            COUNT=$(jq --arg rule "$RULE" '[.issues[] | select(.rule==$rule)] | length' sonar.json)
+
+            PARTIAL=$(echo "$BASE_IMPACT * $COUNT" | bc -l)
+
+            TOTAL_RISK=$(echo "$TOTAL_RISK + $PARTIAL" | bc -l)
+
+            echo "Rule: $RULE | CWE: $CWE | Count: $COUNT | MeanCVSS: $BASE_IMPACT | PartialRisk: $PARTIAL"
+            done
+
+            echo "------------------------------------"
+            echo "Final Empirical SAST Risk Index: $TOTAL_RISK"
+            echo "-------------------------------------"
+          
+          # -----------------------
       # Upload Security Reports
       # -----------------------
       - name: Upload Security Reports
