@@ -79,56 +79,56 @@ jobs:
       # -----------------------
       # Combine Reports (Fixed Permissions)
       # --------------------------
-- name: Calculate Combined Security Risk
-  run: |
-    sudo apt-get update -qq
-    sudo apt-get install -y jq -qq
+      - name: Calculate Combined Security Risk
+        run: |
+            sudo apt-get update -qq
+            sudo apt-get install -y jq -qq
 
-    echo "🔎 Calculating Security Risk..."
+            echo "🔎 Calculating Security Risk..."
 
-    # ----------------------------
-    # 1️⃣ Dependency Check Counts
-    # ----------------------------
-    DC_CRITICAL=$(jq '[.dependencies[].vulnerabilities[]? | select(.severity=="CRITICAL")] | length' reports/dependency-check-report.json)
-    DC_HIGH=$(jq '[.dependencies[].vulnerabilities[]? | select(.severity=="HIGH")] | length' reports/dependency-check-report.json)
-    DC_MEDIUM=$(jq '[.dependencies[].vulnerabilities[]? | select(.severity=="MEDIUM")] | length' reports/dependency-check-report.json)
-    DC_LOW=$(jq '[.dependencies[].vulnerabilities[]? | select(.severity=="LOW")] | length' reports/dependency-check-report.json)
+            # ----------------------------
+            # 1️⃣ Dependency Check Counts
+            # ----------------------------
+            DC_CRITICAL=$(jq '[.dependencies[].vulnerabilities[]? | select(.severity=="CRITICAL")] | length' reports/dependency-check-report.json)
+            DC_HIGH=$(jq '[.dependencies[].vulnerabilities[]? | select(.severity=="HIGH")] | length' reports/dependency-check-report.json)
+            DC_MEDIUM=$(jq '[.dependencies[].vulnerabilities[]? | select(.severity=="MEDIUM")] | length' reports/dependency-check-report.json)
+            DC_LOW=$(jq '[.dependencies[].vulnerabilities[]? | select(.severity=="LOW")] | length' reports/dependency-check-report.json)
 
-    # ----------------------------
-    # 2️⃣ SonarCloud Counts
-    # ----------------------------
-    curl -s -u ${{ secrets.SONAR_TOKEN }}: \
-      "https://sonarcloud.io/api/issues/search?componentKeys=YOUR_PROJECT_KEY&types=VULNERABILITY&ps=500" \
-      -o sonar.json
+            # ----------------------------
+            # 2️⃣ SonarCloud Counts
+            # ----------------------------
+            curl -s -u ${{ secrets.SONAR_TOKEN }}: \
+              "https://sonarcloud.io/api/issues/search?componentKeys=YOUR_PROJECT_KEY&types=VULNERABILITY&ps=500" \
+              -o sonar.json
 
-    SONAR_CRITICAL=$(jq '[.issues[] | select(.severity=="BLOCKER" or .severity=="CRITICAL")] | length' sonar.json)
-    SONAR_HIGH=$(jq '[.issues[] | select(.severity=="MAJOR")] | length' sonar.json)
-    SONAR_MEDIUM=$(jq '[.issues[] | select(.severity=="MINOR")] | length' sonar.json)
-    SONAR_LOW=$(jq '[.issues[] | select(.severity=="INFO")] | length' sonar.json)
+            SONAR_CRITICAL=$(jq '[.issues[] | select(.severity=="BLOCKER" or .severity=="CRITICAL")] | length' sonar.json)
+            SONAR_HIGH=$(jq '[.issues[] | select(.severity=="MAJOR")] | length' sonar.json)
+            SONAR_MEDIUM=$(jq '[.issues[] | select(.severity=="MINOR")] | length' sonar.json)
+            SONAR_LOW=$(jq '[.issues[] | select(.severity=="INFO")] | length' sonar.json)
 
-    # ----------------------------
-    # 3️⃣ Combine Counts
-    # ----------------------------
-    TOTAL_CRITICAL=$((DC_CRITICAL + SONAR_CRITICAL))
-    TOTAL_HIGH=$((DC_HIGH + SONAR_HIGH))
-    TOTAL_MEDIUM=$((DC_MEDIUM + SONAR_MEDIUM))
-    TOTAL_LOW=$((DC_LOW + SONAR_LOW))
+            # ----------------------------
+            # 3️⃣ Combine Counts
+            # ----------------------------
+            TOTAL_CRITICAL=$((DC_CRITICAL + SONAR_CRITICAL))
+            TOTAL_HIGH=$((DC_HIGH + SONAR_HIGH))
+            TOTAL_MEDIUM=$((DC_MEDIUM + SONAR_MEDIUM))
+            TOTAL_LOW=$((DC_LOW + SONAR_LOW))
 
-    # ----------------------------
-    # 4️⃣ Risk Model
-    # ----------------------------
-    RISK_SCORE=$((TOTAL_CRITICAL*10 + TOTAL_HIGH*7 + TOTAL_MEDIUM*4 + TOTAL_LOW*1))
+            # ----------------------------
+            # 4️⃣ Risk Model
+            # ----------------------------
+            RISK_SCORE=$((TOTAL_CRITICAL*10 + TOTAL_HIGH*7 + TOTAL_MEDIUM*4 + TOTAL_LOW*1))
 
-    echo "------------------------------------"
-    echo "🛡️ Combined Security Summary"
-    echo "------------------------------------"
-    echo "Critical : $TOTAL_CRITICAL"
-    echo "High     : $TOTAL_HIGH"
-    echo "Medium   : $TOTAL_MEDIUM"
-    echo "Low      : $TOTAL_LOW"
-    echo "------------------------------------"
-    echo "🎯 Final Risk Score : $RISK_SCORE"
-    echo "------------------------------------"
+            echo "------------------------------------"
+            echo "🛡️ Combined Security Summary"
+            echo "------------------------------------"
+            echo "Critical : $TOTAL_CRITICAL"
+            echo "High     : $TOTAL_HIGH"
+            echo "Medium   : $TOTAL_MEDIUM"
+            echo "Low      : $TOTAL_LOW"
+            echo "------------------------------------"
+            echo "🎯 Final Risk Score : $RISK_SCORE"
+            echo "------------------------------------"
 
       # -----------------------
       # Upload Security Reports
