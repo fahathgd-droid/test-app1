@@ -82,7 +82,7 @@ jobs:
       - name: Calculate Combined Security Risk
         run: |
             echo "Checking JQ Installation"
-            jq -version
+            jq --version
             echo "🔎 Calculating Security Risk..."
 
             # ----------------------------
