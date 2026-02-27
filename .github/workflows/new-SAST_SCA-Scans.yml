@@ -40,12 +40,15 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
-          args: >
-            -Dsonar.projectKey=fahathgd-droid_test-app1
-            -Dsonar.organization=fahathgd-droid
-            -Dsonar.sources=.
-            -Dsonar.exclusions=config/**,docs/**,tests/**,**/*.sql
-            -Dsonar.host.url=https://sonarcloud.io
+            args: >
+              -Dsonar.projectKey=fahathgd-droid_test-app1
+              -Dsonar.organization=fahathgd-droid
+              -Dsonar.sources=.
+              -Dsonar.exclusions=vendor/**,config/**,docs/**,tests/**,**/*.sql
+              -Dsonar.host.url=https://sonarcloud.io
+              -Dsonar.c.file.suffixes=-
+              -Dsonar.cpp.file.suffixes=-
+              -Dsonar.objc.file.suffixes=-
 
       # -----------------------
       # SCA: OWASP Dependency Check
