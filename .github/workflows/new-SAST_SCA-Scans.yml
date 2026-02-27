@@ -42,18 +42,18 @@ jobs:
       # -----------------------
       # SCA: OWASP Dependency Check
       # -----------------------
-      - name: Run OWASP Dependency Check (SCA)
-        uses: dependency-check/Dependency-Check_Action@main
-        id: depcheck
-        with:
-          project: 'DVWA-App'
-          path: '.'
-          format: 'ALL'
-          out: 'reports'
-          args: >
-            --exclude **/passwordProtected.zip
-            --exclude **/arbitraryFileWrite.zip
-            --exclude **/videoExploit.zip
+      # - name: Run OWASP Dependency Check (SCA)
+      #   uses: dependency-check/Dependency-Check_Action@main
+      #   id: depcheck
+      #   with:
+      #     project: 'DVWA-App'
+      #     path: '.'
+      #     format: 'ALL'
+      #     out: 'reports'
+      #     args: >
+      #       --exclude **/passwordProtected.zip
+      #       --exclude **/arbitraryFileWrite.zip
+      #       --exclude **/videoExploit.zip
 
       # -----------------------
       # DAST: OWASP ZAP Baseline Scan
@@ -104,7 +104,8 @@ jobs:
             SONAR_LOW=$(jq '[.issues[] | select(.severity=="INFO")] | length' sonar.json)
 
             echo "added--------Seperate counts"
-                  # 3️⃣ Print Individual Results
+            jq '.issues[] | {rule, severity}' sonar.json
+            # 3️⃣ Print Individual Results
             # ----------------------------
             echo "--------------------------------------"
             echo "🛡️ SCA (Dependency Check) Counts"
