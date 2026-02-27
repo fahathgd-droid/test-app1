@@ -183,7 +183,7 @@ jobs:
               -o rule.json
 
             # Extract CWE (first one if multiple)
-            CWE=$(jq -r '.rule.cwe[0] // empty' rule.json)
+            CWE=$(jq -r '.rule.sysTags[]? | select(test("cwe-"))' rule.json | head -n 1 | tr '[:lower:]' '[:upper:]')
 
             if [ -z "$CWE" ]; then
               BASE_IMPACT=5.0
