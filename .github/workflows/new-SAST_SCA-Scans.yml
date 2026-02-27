@@ -81,6 +81,8 @@ jobs:
       # --------------------------
       - name: Calculate Combined Security Risk
         run: |
+            echo "Checking JQ Installation"
+            jq -version
             echo "🔎 Calculating Security Risk..."
 
             # ----------------------------
@@ -104,7 +106,6 @@ jobs:
             SONAR_LOW=$(jq '[.issues[] | select(.severity=="INFO")] | length' sonar.json)
 
             echo "added--------Seperate counts"
-            jq '.issues[] | {rule, severity}' sonar.json
             # 3️⃣ Print Individual Results
             # ----------------------------
             echo "--------------------------------------"
@@ -159,6 +160,51 @@ jobs:
             echo "------------------------------------"
             echo "🎯 Final Risk Score : $RISK_SCORE"
             echo "------------------------------------"
+
+      - name: CWE-Based Pure SAST Risk Model
+        run: |
+          echo "Calculating CWE-Based SAST Risk..."
+
+          # Fetch all SAST issues
+          curl -s -u ${{ secrets.SONAR_TOKEN }}: \
+            "https://sonarcloud.io/api/issues/search?componentKeys=fahathgd-droid_test-app1&types=VULNERABILITY&ps=500" \
+            -o sonar.json
+
+          TOTAL_RISK=0
+
+          # Get unique rule keys
+          RULES=$(jq -r '.issues[].rule' sonar.json | sort | uniq)
+
+          for RULE in $RULES; do
+
+            # Fetch rule metadata
+            curl -s -u ${{ secrets.SONAR_TOKEN }}: \
+              "https://sonarcloud.io/api/rules/show?key=$RULE" \
+              -o rule.json
+
+            # Extract CWE (first one if multiple)
+            CWE=$(jq -r '.rule.cwe[0] // empty' rule.json)
+
+            if [ -z "$CWE" ]; then
+              BASE_IMPACT=5.0
+            else
+              BASE_IMPACT=$(jq -r --arg cwe "$CWE" '.[$cwe] // 5.0' cwe_base_impact.json)
+            fi
+
+            # Count how many issues use this rule
+            COUNT=$(jq --arg rule "$RULE" '[.issues[] | select(.rule==$rule)] | length' sonar.json)
+
+            RULE_RISK=$(echo "$BASE_IMPACT * $COUNT" | bc -l)
+
+            TOTAL_RISK=$(echo "$TOTAL_RISK + $RULE_RISK" | bc -l)
+
+            echo "Rule: $RULE | CWE: $CWE | Count: $COUNT | BaseImpact: $BASE_IMPACT | PartialRisk: $RULE_RISK"
+
+          done
+
+          echo "----------------------------------------"
+          echo "Final SAST Risk Index (CWE-Based): $TOTAL_RISK"
+          echo "----------------------------------------"
 
       # -----------------------
       # Upload Security Reports
