@@ -216,46 +216,41 @@ jobs:
           echo "----------------------------------------"
           echo "Final SAST Risk Index (CWE-Based): $TOTAL_RISK"
           echo "----------------------------------------"
-      - name: Empirical CWE-Based SAST Risk
+      - name: Empirical CWE-Based SAST Risk (Mapped)
         run: |
-            echo "Calculating Empirical CWE-Based SAST Risk..."
+              echo "Calculating Empirical CWE-Based SAST Risk..."
 
-            curl -s -u ${{ secrets.SONAR_TOKEN }}: \
-            "https://sonarcloud.io/api/issues/search?componentKeys=fahathgd-droid_test-app1&types=VULNERABILITY&ps=500" \
-            -o sonar.json
+              curl -s -u ${{ secrets.SONAR_TOKEN }}: \
+                "https://sonarcloud.io/api/issues/search?componentKeys=fahathgd-droid_test-app1&types=VULNERABILITY&ps=500" \
+                -o sonar.json
 
-            TOTAL_RISK=0
+              TOTAL_RISK=0
 
-            RULES=$(jq -r '.issues[].rule' sonar.json | sort | uniq)
+              RULES=$(jq -r '.issues[].rule' sonar.json | sort | uniq)
 
-            for RULE in $RULES; do
+              for RULE in $RULES; do
 
-            curl -s -u ${{ secrets.SONAR_TOKEN }}: \
-                "https://sonarcloud.io/api/rules/show?key=$RULE" \
-                -o rule.json
+                # Lookup CWE from manual mapping file
+                CWE=$(jq -r --arg rule "$RULE" '.[$rule] // empty' sonar_rule_to_cwe.json)
 
-            CWE=$(jq -r '.rule.sysTags[]? | select(test("cwe-"))' rule.json \
-                    | head -n 1 \
-                    | tr '[:lower:]' '[:upper:]')
+                if [ -z "$CWE" ]; then
+                  BASE_IMPACT=5.0
+                else
+                  BASE_IMPACT=$(jq -r --arg cwe "$CWE" '.[$cwe] // 5.0' cwe_base_impact.json)
+                fi
 
-            if [ -z "$CWE" ]; then
-                BASE_IMPACT=5.0
-            else
-                BASE_IMPACT=$(jq -r --arg cwe "$CWE" '.[$cwe] // 5.0' cwe_base_impact.json)
-            fi
+                COUNT=$(jq --arg rule "$RULE" '[.issues[] | select(.rule==$rule)] | length' sonar.json)
 
-            COUNT=$(jq --arg rule "$RULE" '[.issues[] | select(.rule==$rule)] | length' sonar.json)
+                PARTIAL=$(echo "$BASE_IMPACT * $COUNT" | bc -l)
 
-            PARTIAL=$(echo "$BASE_IMPACT * $COUNT" | bc -l)
+                TOTAL_RISK=$(echo "$TOTAL_RISK + $PARTIAL" | bc -l)
 
-            TOTAL_RISK=$(echo "$TOTAL_RISK + $PARTIAL" | bc -l)
+                echo "Rule: $RULE | CWE: $CWE | Count: $COUNT | MeanCVSS: $BASE_IMPACT | PartialRisk: $PARTIAL"
+              done
 
-            echo "Rule: $RULE | CWE: $CWE | Count: $COUNT | MeanCVSS: $BASE_IMPACT | PartialRisk: $PARTIAL"
-            done
-
-            echo "------------------------------------"
-            echo "Final Empirical SAST Risk Index: $TOTAL_RISK"
-            echo "-------------------------------------"
+              echo "------------------------------------"
+              echo "Final Empirical SAST Risk Index: $TOTAL_RISK"
+              echo "------------------------------------"
           
           # -----------------------
       # Upload Security Reports
