@@ -1,0 +1,14 @@
+{
+  "php:S2077": "CWE-89",
+  "php:S5122": "CWE-79",
+  "php:S5328": "CWE-200",
+  "php:S5542": "CWE-352",
+  "php:S6437": "CWE-22",
+  "phpsecurity:S2076": "CWE-89",
+  "phpsecurity:S2083": "CWE-79",
+  "phpsecurity:S3649": "CWE-78",
+  "phpsecurity:S5131": "CWE-89",
+  "phpsecurity:S5146": "CWE-502",
+  "secrets:S6697": "CWE-798",
+  "secrets:S6702": "CWE-798"
+}
