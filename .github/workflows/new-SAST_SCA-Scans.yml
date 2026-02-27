@@ -42,18 +42,18 @@ jobs:
       # -----------------------
       # SCA: OWASP Dependency Check
       # -----------------------
-      # - name: Run OWASP Dependency Check (SCA)
-      #   uses: dependency-check/Dependency-Check_Action@main
-      #   id: depcheck
-      #   with:
-      #     project: 'DVWA-App'
-      #     path: '.'
-      #     format: 'ALL'
-      #     out: 'reports'
-      #     args: >
-      #       --exclude **/passwordProtected.zip
-      #       --exclude **/arbitraryFileWrite.zip
-      #       --exclude **/videoExploit.zip
+      - name: Run OWASP Dependency Check (SCA)
+        uses: dependency-check/Dependency-Check_Action@main
+        id: depcheck
+        with:
+          project: 'DVWA-App'
+          path: '.'
+          format: 'ALL'
+          out: 'reports'
+          args: >
+            --exclude **/passwordProtected.zip
+            --exclude **/arbitraryFileWrite.zip
+            --exclude **/videoExploit.zip
 
       # -----------------------
       # DAST: OWASP ZAP Baseline Scan
