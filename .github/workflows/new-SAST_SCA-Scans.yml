@@ -34,7 +34,7 @@ jobs:
 
       # ----------------------------
       # SAST: SonarCloud Scan
-      # -----------------------
+      # -------------------------
       - name: SonarCloud Scan (SAST)
         uses: sonarsource/sonarqube-scan-action@v6
         env:
