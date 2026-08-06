@@ -1,0 +1,47 @@
+name: OWASP ZAP Automation Scan
+
+on:
+  push:
+    branches: [ master ]
+  workflow_dispatch:
+
+jobs:
+  zap_scan:
+    runs-on: ubuntu-latest
+    name: Run OWASP ZAP Automation Framework
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Verify ZAP config
+        run: |
+          if [ ! -f "zap-config/autorun.yaml" ]; then
+            echo "❌ zap-config/autorun.yaml not found!"
+            exit 1
+          fi
+
+      - name: Run ZAP Automation Framework
+        uses: MisterIcy/zap-automation-framework@main
+        with:
+          config-dir: 'zap-config'
+          autorun-file: 'autorun.yaml'
+          docker-image: 'ghcr.io/zaproxy/zaproxy:stable'
+          create-annotations: false
+          create-issue: false
+          summary-file: 'summary.json'
+          json-file: 'report.json'
+          issue-title: 'ZAP Scan Result Findings'
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload ZAP HTML Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: zap-html-report
+          path: reports/zap-report.html
+
+      - name: Upload ZAP JSON Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: zap-json-report
+          path: reports/report.json

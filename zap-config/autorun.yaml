@@ -1,0 +1,24 @@
+env:
+  contexts:
+    - name: "Test Context"
+      urls:
+        - "http://testphp.vulnweb.com"
+
+jobs:
+  - type: spider
+    parameters:
+      context: "Test Context"
+      maxDuration: 1
+
+  - type: activeScan
+    parameters:
+      context: "Test Context"
+      maxRuleDurationInMins: 2
+
+  - type: report
+    parameters:
+      template: "traditional-html"
+      reportDir: "/zap/reports"
+      reportFile: "zap-report.html"
+      reportTitle: "ZAP Security Report"
+      displayReport: false

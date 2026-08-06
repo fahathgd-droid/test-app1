@@ -1,0 +1,115 @@
+name: DVWA Security Scan
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  security-scan:
+    runs-on: ubuntu-latest
+
+    steps:
+      # -----------------------
+      # Checkout Code
+      # -----------------------
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      # -----------------------
+      # Set up PHP
+      # -----------------------
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.2
+
+      # -----------------------
+      # SAST: SonarCloud Scan
+      # -----------------------
+      - name: SonarCloud Scan (SAST)
+        uses: sonarsource/sonarqube-scan-action@v6
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          args: >
+            -Dsonar.projectKey=dvwa22
+            -Dsonar.organization=dvwa22
+            -Dsonar.sources=.
+            -Dsonar.exclusions=config/**,docs/**,tests/**
+            -Dsonar.host.url=https://sonarcloud.io
+            -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+            -Dsonar.branch.name=master
+
+      # -----------------------
+      # SCA: OWASP Dependency Check
+      # -----------------------
+      - name: Run OWASP Dependency Check (SCA)
+        uses: dependency-check/Dependency-Check_Action@main
+        id: depcheck
+        with:
+          project: 'DVWA-App'
+          path: '.'
+          format: 'HTML'
+          out: 'reports'
+          args: >
+            --exclude **/passwordProtected.zip
+            --exclude **/arbitraryFileWrite.zip
+            --exclude **/videoExploit.zip
+
+      # -----------------------
+      # DAST: OWASP ZAP Baseline Scan
+      # -----------------------
+  #    - name: Run OWASP ZAP Baseline Scan (DAST)
+  #      uses: zaproxy/action-baseline@v0.10.0
+  #      with:
+  #        target: "http://testphp.vulnweb.com/"  # or "http://zero.webappsecurity.com/"
+  #        cmd_options: >
+  #          -a
+  #          -r zap-report.html
+  #          -m 5  # limit to 5 mins max passive scan to keep run short
+  #        fail_action: false
+  #        allow_issue_writing: true
+  #        artifact_name: zap_scan
+  #      env:
+  #        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #        WORKSPACE: /tmp  # prevents /zap/wrk permission issues
+  #        COMPOSER_PROCESS_TIMEOUT: 0
+  #        COMPOSER_NO_INTERACTION: 1
+  #        COMPOSER_NO_AUDIT: 1
+
+      # -----------------------
+      # Combine Reports (Fixed Permissions)
+      # -----------------------
+      - name: Combine Security Reports
+        run: |
+          # Ensure reports folder exists and is writable
+          sudo mkdir -p reports
+          sudo chmod -R 777 reports
+          
+          echo "## 🛡️ Security Summary" > reports/final-report.md
+          
+          echo -e "\n### 🔍 SonarCloud Scan" >> reports/final-report.md
+          echo '```' >> reports/final-report.md
+          echo "SonarCloud scan completed. Check SonarCloud dashboard for detailed SAST results." >> reports/final-report.md
+          echo '```' >> reports/final-report.md
+          
+          echo -e "\n### 📦 Dependency Check (SCA)" >> reports/final-report.md
+          echo '```html' >> reports/final-report.md
+          sudo cat reports/dependency-check-report.html >> reports/final-report.md || echo "No Dependency Check report found." >> reports/final-report.md
+          echo '```' >> reports/final-report.md
+          
+          echo -e "\n✅ Combined report generated at reports/final-report.md"
+
+
+
+      # -----------------------
+      # Upload Security Reports
+      # -----------------------
+      - name: Upload Security Reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-reports
+          path: |
+            reports
+            zap-report.html

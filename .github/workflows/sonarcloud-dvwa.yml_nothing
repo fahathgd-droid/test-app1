@@ -1,0 +1,31 @@
+name: OWASP ZAP Automation Scan
+
+on:
+  push:
+    branches: [ master ]
+  workflow_dispatch:
+
+jobs:
+  zap_scan:
+    runs-on: ubuntu-latest
+    name: Run OWASP ZAP Automation Framework
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Ensure zap-config folder is present with autorun.yaml inside
+      - name: Verify ZAP config
+        run: |
+          if [ ! -f "zap-config/autorun.yaml" ]; then
+            echo "❌ zap-config/autorun.yaml not found!"
+            exit 1
+          fi
+
+      - name: Run ZAP Automation Framework
+        uses: MisterIcy/zap-automation-framework@main
+        with:
+          config-dir: 'zap-config'           # folder containing autorun.yaml
+          autorun-file: 'autorun.yaml'       # ZAP automation config
+          reports-dir: 'reports'             # report output directory
+          create-annotations: false          # optional: true to show warnings inline
